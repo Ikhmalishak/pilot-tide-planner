@@ -6,20 +6,6 @@ import { formatTime, todayLocal } from '../utils/format';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    RED: 'bg-red-100 text-red-700 ring-1 ring-red-300/50',
-    YELLOW: 'bg-yellow-100 text-yellow-700 ring-1 ring-yellow-300/50',
-    GREEN: 'bg-green-100 text-green-700 ring-1 ring-green-300/50',
-  };
-  return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold ${styles[status] || 'bg-gray-100 text-gray-500'}`}>
-      <span className="text-[10px]">{status === 'RED' ? '\u25CF' : status === 'YELLOW' ? '\u25CF' : '\u25CF'}</span>
-      {status}
-    </span>
-  );
-}
-
 export default function DashboardPage() {
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState(todayLocal());
@@ -67,7 +53,6 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {/* Header section - stacks on mobile */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">Dashboard</h2>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
@@ -99,9 +84,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Grid - single column on mobile, 3 columns on large screens */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* Tide Indicators card */}
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-5">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-blue-500 shrink-0">
@@ -133,88 +116,84 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Navigation Window card - full width on mobile */}
         <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-5">
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
             <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-blue-500 shrink-0">
               <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v2H4V6zm0 4h12v2H4v-2zm0 4h12v2H4v-2z" clipRule="evenodd" />
             </svg>
             Navigation Window
           </h3>
+
           {tideStatus === 'empty' ? (
             <p className="text-sm text-gray-400 text-center py-8">No navigation window generated. Click <span className="font-medium text-gray-500">Generate</span>.</p>
           ) : (
-            <>
-              {/* Mobile card view */}
-              <div className="sm:hidden space-y-2 max-h-[55vh] overflow-y-auto rounded-lg border border-gray-100 p-2">
-                {HOURS.map((h) => {
-                  const info = itemsMap[h];
-                  return (
-                    <div key={h} className="border border-gray-100 rounded-lg p-2.5">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="font-mono text-sm text-gray-700">{String(h).padStart(2, '0')}:00</span>
-                        {info?.waterLevelFt != null ? (
-                          <span className="font-mono text-sm font-medium text-gray-800">{Number(info.waterLevelFt).toFixed(2)} ft</span>
-                        ) : (
-                          <span className="text-gray-300 italic text-sm">N/A</span>
-                        )}
-                      </div>
-                      {info?.status?.length ? (
-                        <div className="flex gap-1.5 flex-wrap">
-                          {info.status.map((s) => (
-                            <StatusBadge key={s} status={s} />
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-gray-300 italic text-xs">N/A</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              {/* Desktop table view */}
-              <div className="hidden sm:block max-h-[55vh] overflow-auto rounded-lg border border-gray-100">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50 sticky top-0">
-                    <tr>
-                      <th className="text-left px-3 sm:px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wider">Time</th>
-                      <th className="text-left px-3 sm:px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wider">Tide (ft)</th>
-                      <th className="text-left px-3 sm:px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wider">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+            <div className="overflow-x-auto max-h-[55vh] overflow-y-auto rounded-lg border border-gray-100">
+              <table className="w-full text-xs border-collapse">
+                <thead className="bg-gray-50 sticky top-0 z-10">
+                  <tr>
+                    <th className="sticky left-0 bg-gray-50 z-20 px-2 py-2 font-semibold text-gray-600 text-[10px] uppercase tracking-wider text-left min-w-[60px]">
+                      Hour
+                    </th>
+                    {HOURS.map((h) => (
+                      <th
+                        key={h}
+                        className={`px-1.5 py-2 font-mono font-semibold text-center text-[10px] w-[44px] ${
+                          h % 3 === 0 ? 'text-gray-800' : 'text-gray-400'
+                        }`}
+                      >
+                        {String(h).padStart(2, '0')}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-t border-gray-100">
+                    <td className="sticky left-0 bg-white z-10 px-2 py-2 font-semibold text-gray-600 text-[10px] uppercase tracking-wider">
+                      Metre (m)
+                    </td>
                     {HOURS.map((h) => {
                       const info = itemsMap[h];
+                      const hasRed = info?.status?.includes('RED');
                       return (
-                        <tr key={h} className={`border-t border-gray-50 transition-colors ${info ? 'hover:bg-gray-50' : ''}`}>
-                          <td className="px-3 sm:px-4 py-2.5 font-mono text-sm text-gray-700">
-                            {String(h).padStart(2, '0')}:00
-                          </td>
-                          <td className="px-3 sm:px-4 py-2.5 text-sm">
-                            {info?.waterLevelFt != null ? (
-                              <span className="font-mono font-medium text-gray-800">{Number(info.waterLevelFt).toFixed(2)}</span>
-                            ) : (
-                              <span className="text-gray-300 italic">N/A</span>
-                            )}
-                          </td>
-                          <td className="px-3 sm:px-4 py-2.5">
-                            {info?.status?.length ? (
-                              <div className="flex gap-1.5 flex-wrap">
-                                {info.status.map((s) => (
-                                  <StatusBadge key={s} status={s} />
-                                ))}
-                              </div>
-                            ) : (
-                              <span className="text-gray-300 italic text-sm">N/A</span>
-                            )}
-                          </td>
-                        </tr>
+                        <td
+                          key={h}
+                          className={`px-1.5 py-2 text-center font-mono text-[11px] ${
+                            hasRed ? 'bg-red-100 text-red-800' : 'text-gray-400'
+                          }`}
+                        >
+                          {info?.waterLevelFt != null
+                            ? (info.waterLevelFt * 0.3048).toFixed(2)
+                            : '-'}
+                        </td>
                       );
                     })}
-                  </tbody>
-                </table>
-              </div>
-            </>
+                  </tr>
+                  <tr className="border-t border-gray-100">
+                    <td className="sticky left-0 bg-white z-10 px-2 py-2 font-semibold text-gray-600 text-[10px] uppercase tracking-wider">
+                      Tide (ft)
+                    </td>
+                    {HOURS.map((h) => {
+                      const info = itemsMap[h];
+                      const hasGreen = info?.status?.includes('GREEN');
+                      const hasYellow = info?.status?.includes('YELLOW');
+                      const hl = hasGreen ? 'bg-green-100 text-green-800' : hasYellow ? 'bg-yellow-100 text-yellow-800' : null;
+                      return (
+                        <td
+                          key={h}
+                          className={`px-1.5 py-2 text-center font-mono text-[11px] ${
+                            hl || 'text-gray-400'
+                          }`}
+                        >
+                          {info?.waterLevelFt != null
+                            ? Number(info.waterLevelFt).toFixed(1)
+                            : '-'}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
