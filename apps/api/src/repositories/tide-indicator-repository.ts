@@ -29,4 +29,10 @@ export const tideIndicatorRepository = {
   async delete(id: string) {
     return prisma.tideIndicator.delete({ where: { id } });
   },
+
+  async deleteByDate(date: string) {
+    const start = new Date(`${date}T00:00:00Z`);
+    const end = new Date(`${date}T23:59:59Z`);
+    return prisma.tideIndicator.deleteMany({ where: { occurredAt: { gte: start, lte: end } } });
+  },
 };

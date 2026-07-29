@@ -25,4 +25,10 @@ export const hourlyLevelRepository = {
   async delete(id: string) {
     return prisma.hourlyTideLevel.delete({ where: { id } });
   },
+
+  async deleteByDate(date: string) {
+    const start = new Date(`${date}T00:00:00Z`);
+    const end = new Date(`${date}T23:59:59Z`);
+    return prisma.hourlyTideLevel.deleteMany({ where: { recordedAt: { gte: start, lte: end } } });
+  },
 };

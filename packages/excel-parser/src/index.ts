@@ -23,7 +23,9 @@ export function parseTideIndicators(file: Uint8Array): ParseResult<TideIndicator
 
       const hours = time.slice(0, 2);
       const minutes = time.slice(2, 4);
-      const occurredAt = new Date(`${date}T${hours}:${minutes}:00`);
+      const dateStr = String(date || '');
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const occurredAt = new Date(Date.UTC(year, month - 1, day, Number(hours), Number(minutes)));
 
       if (!type || !['HIGH', 'LOW'].includes(type)) {
         result.errors.push({ row: index + 1, message: `Invalid tide type: ${type}` });
@@ -63,7 +65,8 @@ export function parseHourlyLevels(file: Uint8Array): ParseResult<HourlyTideLevel
 
       const hours = time.slice(0, 2);
       const minutes = time.slice(2, 4);
-      const recordedAt = new Date(`2026-01-01T${hours}:${minutes}:00`);
+      const now = new Date();
+      const recordedAt = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), Number(hours), Number(minutes)));
 
       if (isNaN(level)) {
         result.errors.push({ row: index + 1, message: `Invalid water level: ${row['Level']}` });

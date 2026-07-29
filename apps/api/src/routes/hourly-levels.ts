@@ -58,6 +58,13 @@ router.post('/import', upload.single('file'), async (req: Request, res: Response
       return res.status(422).json({ success: false, message: 'Failed to parse file', code: 'PARSE_ERROR', errors: parsed.errors });
     }
     if (parsed.data.length > 0) {
+      const dates = [...new Set(parsed.data.map((d) => {
+        const dt = new Date(d.recordedAt);
+        return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`;
+      }))];
+      for (const date of dates) {
+        await hourlyLevelRepository.deleteByDate(date);
+      }
       await hourlyLevelRepository.createMany(parsed.data as any);
     }
     res.json({ success: true, inserted: parsed.data.length, failed: parsed.errors.length, errors: parsed.errors });
