@@ -3,8 +3,9 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "module": "CommonJS",
-    "moduleResolution": "node"
+    "module": "nodenext",
+    "moduleResolution": "nodenext"
+
   },
   "include": ["src"]
 }

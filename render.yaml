@@ -4,7 +4,7 @@ services:
     runtime: node
     region: singapore
     plan: free
-    buildCommand: npm install && npm run build -w packages/shared-types && npm run build -w packages/navigation-engine && npm run build -w packages/validation && npm run build -w packages/excel-parser && npm run build -w apps/api && npx prisma generate --schema=prisma/schema.prisma
+    buildCommand: npm install --include=dev && npm run build -w packages/shared-types && npm run build -w packages/navigation-engine && npm run build -w packages/validation && npm run build -w packages/excel-parser && npm run build -w apps/api && npx prisma generate --schema=prisma/schema.prisma
     startCommand: npx prisma migrate deploy --schema=prisma/schema.prisma && npx tsx prisma/seed.ts && cd apps/api && node dist/server.js
     envVars:
       - key: DATABASE_URL

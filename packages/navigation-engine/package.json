@@ -13,7 +13,7 @@
     "@pilot-tide-planner/shared-types": "*"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
+    "typescript": "~5.9.3",
     "vitest": "^1.6.0"
   }
 }
