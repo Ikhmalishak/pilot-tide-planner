@@ -86,6 +86,10 @@ export class NavigationProcessor {
         if (level.waterLevelFt >= redThreshold) {
           item.isRed = true;
         }
+        const yellowThreshold = currentLow.waterLevelFt + this.profile.yellowDifference;
+        if (level.waterLevelFt >= yellowThreshold && !this.profile.isYellowDisabled(item.hourString)) {
+          item.isYellow = true;
+        }
         const greenThreshold = currentLow.waterLevelFt + this.profile.greenDifference;
         if (level.waterLevelFt >= greenThreshold) {
           if (!greenActive) {

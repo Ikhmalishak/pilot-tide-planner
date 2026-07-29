@@ -117,6 +117,20 @@ describe('Navigation Engine', () => {
     expect(result.items[5].isGreen).toBe(false); // 13:00 - 7.00 still below peak
   });
 
+  it('should assign YELLOW in LOW_TIDE_RISING based on low tide + yellowDifference', () => {
+    const indicators: TideIndicator[] = [
+      { occurredAt: utcDate('2026-07-01T01:47:00'), type: 'HIGH', waterLevelFt: 8.86 },
+      { occurredAt: utcDate('2026-07-01T20:52:00'), type: 'LOW', waterLevelFt: 2.62 },
+    ];
+    const levels: HourlyTideLevel[] = [
+      { recordedAt: utcDate('2026-07-01T23:00:00'), waterLevelFt: 4.30 },
+    ];
+
+    const result = generateNavigationWindow(indicators, levels, defaultProfile);
+
+    expect(result.items[0].isYellow).toBe(true); // 23:00 - 4.30 >= 2.62 + 1.5 = 4.12
+  });
+
   it('should throw error for empty tide indicators', () => {
     expect(() =>
       generateNavigationWindow([], [{ recordedAt: new Date(), waterLevelFt: 5.0 }], defaultProfile)
