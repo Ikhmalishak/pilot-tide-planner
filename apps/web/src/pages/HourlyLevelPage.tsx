@@ -91,10 +91,10 @@ export default function HourlyLevelPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Hourly Tide Levels</h2>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg font-mono">{date}</span>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">Hourly Tide Levels</h2>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <span className="text-sm text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg font-mono text-center sm:text-left">{date}</span>
           <button
             onClick={saveAll}
             disabled={isSaving}
@@ -105,7 +105,41 @@ export default function HourlyLevelPage() {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      {/* Mobile card grid view */}
+      <div className="sm:hidden grid grid-cols-2 gap-3">
+        {HOURS.map((h) => {
+          const existing = existingMap[h];
+          const hasValue = values[h]?.trim();
+          return (
+            <div
+              key={h}
+              className={`bg-white border rounded-lg shadow-sm p-3 ${
+                existing ? 'border-gray-200' : hasValue ? 'border-blue-200 bg-blue-50/30' : 'border-gray-200'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono font-semibold text-sm text-gray-700">{String(h).padStart(2, '0')}:00</span>
+                {existing ? (
+                  <span className="text-[10px] font-medium text-green-600">{'\u2713'}</span>
+                ) : hasValue ? (
+                  <span className="text-[10px] font-medium text-blue-500">{'\u25CB'}</span>
+                ) : null}
+              </div>
+              <input
+                type="number"
+                step="0.01"
+                value={values[h] ?? ''}
+                onChange={(e) => setHour(h, e.target.value)}
+                placeholder="--"
+                className="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop table view */}
+      <div className="hidden sm:block bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <div className="max-h-[70vh] overflow-y-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 sticky top-0">

@@ -64,15 +64,15 @@ export default function RuleProfilePage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-6">Rule Profiles</h2>
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-6">Rule Profiles</h2>
 
       <div className="space-y-4">
         {(profiles as RuleProfile[])?.map((profile) => (
-          <div key={profile.id} className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+          <div key={profile.id} className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
             {editingId === profile.id ? (
-              <div className="space-y-5 max-w-lg">
+              <div className="space-y-5 max-w-2xl">
                 <h3 className="font-semibold text-gray-900 text-lg">{profile.name}</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Red Diff</label>
                     <input
@@ -139,9 +139,9 @@ export default function RuleProfilePage() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
                     <h3 className="font-semibold text-gray-900 text-lg">{profile.name}</h3>
                     {profile.active && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-green-50 text-green-600 ring-1 ring-green-200">
@@ -149,32 +149,32 @@ export default function RuleProfilePage() {
                       </span>
                     )}
                   </div>
-                  <div className="grid grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                     <div className="bg-gray-50 rounded-lg p-3">
                       <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Red Diff</span>
-                      <p className="font-bold text-gray-800 text-lg">{Number(profile.redDifference).toFixed(1)} <span className="text-sm font-normal text-gray-400">ft</span></p>
+                      <p className="font-bold text-gray-800 text-base sm:text-lg">{Number(profile.redDifference).toFixed(1)} <span className="text-sm font-normal text-gray-400">ft</span></p>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-3">
                       <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Yellow Diff</span>
-                      <p className="font-bold text-gray-800 text-lg">{Number(profile.yellowDifference).toFixed(1)} <span className="text-sm font-normal text-gray-400">ft</span></p>
+                      <p className="font-bold text-gray-800 text-base sm:text-lg">{Number(profile.yellowDifference).toFixed(1)} <span className="text-sm font-normal text-gray-400">ft</span></p>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-3">
                       <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Green Diff</span>
-                      <p className="font-bold text-gray-800 text-lg">{Number(profile.greenDifference).toFixed(1)} <span className="text-sm font-normal text-gray-400">ft</span></p>
+                      <p className="font-bold text-gray-800 text-base sm:text-lg">{Number(profile.greenDifference).toFixed(1)} <span className="text-sm font-normal text-gray-400">ft</span></p>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-3">
                       <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Yellow Off</span>
-                      <p className="font-bold text-gray-800 text-lg font-mono">{profile.yellowDisabledStart?.slice(11, 16) || '07:00'}</p>
+                      <p className="font-bold text-gray-800 text-base sm:text-lg font-mono">{profile.yellowDisabledStart?.slice(11, 16) || '07:00'}</p>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-3">
                       <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Yellow On</span>
-                      <p className="font-bold text-gray-800 text-lg font-mono">{profile.yellowDisabledEnd?.slice(11, 16) || '19:00'}</p>
+                      <p className="font-bold text-gray-800 text-base sm:text-lg font-mono">{profile.yellowDisabledEnd?.slice(11, 16) || '19:00'}</p>
                     </div>
                   </div>
                 </div>
                 <button
                   onClick={() => startEdit(profile)}
-                  className="ml-4 px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="sm:ml-4 px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors self-start sm:self-auto"
                 >
                   Edit
                 </button>

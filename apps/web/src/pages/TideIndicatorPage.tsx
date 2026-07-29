@@ -105,10 +105,10 @@ export default function TideIndicatorPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Tide Indicators</h2>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg font-mono">{date}</span>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">Tide Indicators</h2>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <span className="text-sm text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg font-mono text-center sm:text-left">{date}</span>
           <button
             onClick={saveAll}
             disabled={isSaving}
@@ -119,7 +119,68 @@ export default function TideIndicatorPage() {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="sm:hidden space-y-3">
+        {SLOTS.map((slot, i) => {
+          const existing = existingBySlot[i];
+          const hasInput = times[i] && levels[i];
+          return (
+            <div
+              key={i}
+              className={`bg-white border border-gray-200 rounded-xl shadow-sm p-4 ${
+                existing ? '' : hasInput ? 'bg-blue-50/30 border-blue-200' : ''
+              }`}
+            >
+              <div className="flex items-center gap-2.5 mb-3">
+                <span className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold shrink-0 ${
+                  slot.type === 'HIGH' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'
+                }`}>
+                  {slot.type === 'HIGH' ? '\u2191' : '\u2193'}
+                </span>
+                <span className={`font-semibold ${slot.type === 'HIGH' ? 'text-orange-700' : 'text-blue-700'}`}>
+                  {slot.label}
+                </span>
+                {existing ? (
+                  <span className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-green-50 text-green-600 ring-1 ring-green-200">{'\u2713'} SAVED</span>
+                ) : hasInput ? (
+                  <span className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600 ring-1 ring-blue-200">{'\u25CB'} UNSAVED</span>
+                ) : null}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Time</label>
+                  <input
+                    type="time"
+                    value={times[i]}
+                    onChange={(e) => {
+                      const next = [...times];
+                      next[i] = e.target.value;
+                      setTimes(next);
+                    }}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Level (ft)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={levels[i]}
+                    onChange={(e) => {
+                      const next = [...levels];
+                      next[i] = e.target.value;
+                      setLevels(next);
+                    }}
+                    placeholder="--"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="hidden sm:block bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <div className="max-h-[70vh] overflow-y-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 sticky top-0">
@@ -176,13 +237,9 @@ export default function TideIndicatorPage() {
                     </td>
                     <td className="px-5 py-3">
                       {existing ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-green-50 text-green-600 ring-1 ring-green-200">
-                          {'\u2713'} SAVED
-                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-green-50 text-green-600 ring-1 ring-green-200">{'\u2713'} SAVED</span>
                       ) : hasInput ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600 ring-1 ring-blue-200">
-                          {'\u25CB'} UNSAVED
-                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600 ring-1 ring-blue-200">{'\u25CB'} UNSAVED</span>
                       ) : (
                         <span className="text-gray-300 text-xs">empty</span>
                       )}

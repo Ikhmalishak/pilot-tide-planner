@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 
 function Icon({ children }: { children: React.ReactNode }) {
@@ -53,15 +54,36 @@ const navItems = [
 ];
 
 export default function AppLayout() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-blue-900 tracking-tight">Pilot Tide Planner</h1>
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+          <h1 className="text-lg sm:text-xl font-bold text-blue-900 tracking-tight">Pilot Tide Planner</h1>
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? (
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6">
+                <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
         </div>
       </header>
+
       <div className="flex">
-        <aside className="w-56 bg-white border-r border-gray-200 min-h-[calc(100vh-57px)] shadow-sm">
+        {/* Desktop sidebar */}
+        <aside className="hidden lg:block w-56 bg-white border-r border-gray-200 min-h-[calc(100vh-57px)] shadow-sm shrink-0">
           <nav className="p-3 space-y-1">
             {navItems.map((item) => (
               <NavLink
@@ -81,7 +103,56 @@ export default function AppLayout() {
             ))}
           </nav>
         </aside>
-        <main className="flex-1 p-6 max-w-7xl">
+
+        {/* Mobile sidebar overlay */}
+        {mobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+
+        {/* Mobile sidebar drawer */}
+        <aside
+          className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 shadow-xl z-50 transform transition-transform duration-200 ease-in-out lg:hidden ${
+            mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+            <span className="font-bold text-blue-900">Navigation</span>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              aria-label="Close menu"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+          <nav className="p-3 space-y-1">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={() => setMobileMenuOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                    isActive
+                      ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`
+                }
+              >
+                <Icon>{item.icon}</Icon>
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+        </aside>
+
+        {/* Main content */}
+        <main className="flex-1 p-4 sm:p-6 max-w-7xl min-w-0">
           <Outlet />
         </main>
       </div>

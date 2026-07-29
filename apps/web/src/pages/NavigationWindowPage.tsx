@@ -37,18 +37,18 @@ export default function NavigationWindowPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Navigation History</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">Navigation History</h2>
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow w-full sm:w-auto"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-5">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <span className="text-blue-500">{'\u{1F4C5}'}</span>
             View by Date: <span className="font-mono font-normal text-gray-500">{date}</span>
@@ -58,39 +58,59 @@ export default function NavigationWindowPage() {
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
             </div>
           ) : byDate ? (
-            <div className="max-h-[55vh] overflow-y-auto rounded-lg border border-gray-100">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 sticky top-0">
-                  <tr>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wider">Hour</th>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wider">Level</th>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wider">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(byDate as any)?.items?.map((item: any, idx: number) => (
-                    <tr key={idx} className="border-t border-gray-50 hover:bg-gray-50/50 transition-colors">
-                      <td className="px-4 py-2.5 font-mono text-gray-700">{formatTime(item.hour)}</td>
-                      <td className="px-4 py-2.5 font-mono font-medium text-gray-800">{Number(item.waterLevelFt).toFixed(2)} ft</td>
-                      <td className="px-4 py-2.5">
-                        <div className="flex gap-1.5 flex-wrap">
-                          {item.isRed && <StatusBadge status="RED" />}
-                          {item.isYellow && <StatusBadge status="YELLOW" />}
-                          {item.isGreen && <StatusBadge status="GREEN" />}
-                          {!item.isRed && !item.isYellow && !item.isGreen && <span className="text-gray-300 italic">-</span>}
-                        </div>
-                      </td>
+            <>
+              {/* Mobile card view */}
+              <div className="sm:hidden space-y-2 max-h-[55vh] overflow-y-auto rounded-lg border border-gray-100 p-2">
+                {(byDate as any)?.items?.map((item: any, idx: number) => (
+                  <div key={idx} className="border border-gray-100 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-mono text-sm text-gray-700">{formatTime(item.hour)}</span>
+                      <span className="font-mono text-sm font-medium text-gray-800">{Number(item.waterLevelFt).toFixed(2)} ft</span>
+                    </div>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {item.isRed && <StatusBadge status="RED" />}
+                      {item.isYellow && <StatusBadge status="YELLOW" />}
+                      {item.isGreen && <StatusBadge status="GREEN" />}
+                      {!item.isRed && !item.isYellow && !item.isGreen && <span className="text-gray-300 italic text-xs">-</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Desktop table view */}
+              <div className="hidden sm:block max-h-[55vh] overflow-y-auto rounded-lg border border-gray-100">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 sticky top-0">
+                    <tr>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wider">Hour</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wider">Level</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wider">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {(byDate as any)?.items?.map((item: any, idx: number) => (
+                      <tr key={idx} className="border-t border-gray-50 hover:bg-gray-50/50 transition-colors">
+                        <td className="px-4 py-2.5 font-mono text-gray-700">{formatTime(item.hour)}</td>
+                        <td className="px-4 py-2.5 font-mono font-medium text-gray-800">{Number(item.waterLevelFt).toFixed(2)} ft</td>
+                        <td className="px-4 py-2.5">
+                          <div className="flex gap-1.5 flex-wrap">
+                            {item.isRed && <StatusBadge status="RED" />}
+                            {item.isYellow && <StatusBadge status="YELLOW" />}
+                            {item.isGreen && <StatusBadge status="GREEN" />}
+                            {!item.isRed && !item.isYellow && !item.isGreen && <span className="text-gray-300 italic">-</span>}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : (
             <p className="text-sm text-gray-400 text-center py-8">No navigation window for this date</p>
           )}
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-5">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <span className="text-blue-500">{'\u2630'}</span>
             History
@@ -101,7 +121,27 @@ export default function NavigationWindowPage() {
             </div>
           ) : (
             <>
-              <div className="max-h-[45vh] overflow-y-auto rounded-lg border border-gray-100">
+              {/* Mobile card view */}
+              <div className="sm:hidden space-y-2 max-h-[45vh] overflow-y-auto rounded-lg border border-gray-100 p-2">
+                {(history as any)?.data?.map((w: any, idx: number) => (
+                  <div key={idx} className="border border-gray-100 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-mono text-sm text-gray-700">{w.navigationDate?.slice(0, 10)}</span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
+                        w.status === 'GENERATED' ? 'bg-green-50 text-green-600 ring-1 ring-green-200' : 'bg-red-50 text-red-600 ring-1 ring-red-200'
+                      }`}>
+                        {w.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500">Generated: {w.generatedAt ? formatTime(w.generatedAt) : '-'}</p>
+                  </div>
+                ))}
+                {(!history || (history as any).data?.length === 0) && (
+                  <p className="py-8 text-center text-gray-400 italic text-sm">No history</p>
+                )}
+              </div>
+              {/* Desktop table view */}
+              <div className="hidden sm:block max-h-[45vh] overflow-y-auto rounded-lg border border-gray-100">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 sticky top-0">
                     <tr>
