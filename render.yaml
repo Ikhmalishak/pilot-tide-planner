@@ -16,7 +16,21 @@ services:
       - key: NODE_ENV
         value: "production"
       - key: CORS_ORIGIN
-        value: "https://tidenav-web.onrender.com"
+        value: "https://pilot-tide-planner.onrender.com"
+
+  - type: web
+    name: pilot-tide-planner
+    runtime: static
+
+    buildCommand: npm install --include=dev && npm run build -w packages/shared-types && npm run build -w packages/navigation-engine && npm run build -w packages/validation && npm run build -w apps/web
+    staticPublishPath: apps/web/dist
+    envVars:
+      - key: VITE_API_URL
+        value: "https://tidenav-api.onrender.com/api"
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
 
 databases:
   - name: tidenav-db
