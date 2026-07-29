@@ -4,8 +4,8 @@ services:
     runtime: node
     region: singapore
     plan: free
-    buildCommand: cd ../.. && npm install && npm run build -w packages/shared-types && npm run build -w packages/navigation-engine && npm run build -w packages/validation && npm run build -w packages/excel-parser && npm run build -w apps/api && cd apps/api && npx prisma generate
-    startCommand: node dist/server.js
+    buildCommand: npm install && npm run build -w packages/shared-types && npm run build -w packages/navigation-engine && npm run build -w packages/validation && npm run build -w packages/excel-parser && npm run build -w apps/api && cd apps/api && npx prisma generate
+    startCommand: cd apps/api && node dist/server.js
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -22,8 +22,8 @@ services:
     name: tidenav-web
     runtime: static
     region: singapore
-    buildCommand: cd ../.. && npm install && npm run build -w packages/shared-types && npm run build -w apps/web
-    staticPublishPath: ./apps/web/dist
+    buildCommand: npm install && npm run build -w packages/shared-types && npm run build -w apps/web
+    staticPublishPath: apps/web/dist
     envVars:
       - key: VITE_API_URL
         value: "https://tidenav-api.onrender.com/api"
