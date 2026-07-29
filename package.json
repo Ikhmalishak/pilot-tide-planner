@@ -1,0 +1,25 @@
+{
+  "name": "pilot-tide-planner",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "prisma"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:web": "npm run dev -w apps/web",
+    "dev:api": "npm run dev -w apps/api",
+    "build": "npm run build -w packages/shared-types && npm run build -w packages/navigation-engine && npm run build -w packages/validation && npm run build -w packages/excel-parser && npm run build -w apps/api && npm run build -w apps/web",
+    "lint": "npm run lint -w apps/web && npm run lint -w apps/api",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "npm run db:migrate -w prisma",
+    "db:seed": "npm run db:seed -w prisma",
+    "test": "npm run test -w packages/navigation-engine"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.4.0"
+  }
+}

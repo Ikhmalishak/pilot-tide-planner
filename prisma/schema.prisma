@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TideType {
+  HIGH
+  LOW
+}
+
+enum DataSource {
+  EXCEL
+  MANUAL
+  API
+  OCR
+}
+
+enum NavigationStatus {
+  GENERATED
+  FAILED
+}
+
+model RuleProfile {
+  id                  String              @id @default(uuid())
+  name                String
+  redDifference       Decimal
+  yellowDifference    Decimal
+  greenDifference     Decimal
+  yellowDisabledStart DateTime
+  yellowDisabledEnd   DateTime
+  active              Boolean             @default(true)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  navigationWindows NavigationWindow[]
+}
+
+model TideIndicator {
+  id            String      @id @default(uuid())
+  occurredAt    DateTime
+  type          TideType
+  waterLevelFt  Decimal
+  waterLevelMeter Decimal?
+  source        DataSource  @default(MANUAL)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([occurredAt])
+}
+
+model HourlyTideLevel {
+  id              String      @id @default(uuid())
+  recordedAt      DateTime    @unique
+  waterLevelFt    Decimal
+  waterLevelMeter Decimal?
+  source          DataSource  @default(MANUAL)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([recordedAt])
+}
+
+model NavigationWindow {
+  id             String                 @id @default(uuid())
+  navigationDate DateTime
+  profileId      String
+  profile        RuleProfile            @relation(fields: [profileId], references: [id])
+  status         NavigationStatus
+  generatedAt    DateTime               @default(now())
+  createdAt      DateTime               @default(now())
+
+  items NavigationWindowItem[]
+
+  @@index([navigationDate])
+}
+
+model NavigationWindowItem {
+  id            String           @id @default(uuid())
+  windowId      String
+  window        NavigationWindow @relation(fields: [windowId], references: [id], onDelete: Cascade)
+  hour          DateTime
+  waterLevelFt  Decimal
+  waterLevelMeter Decimal?
+  isRed         Boolean          @default(false)
+  isYellow      Boolean          @default(false)
+  isGreen       Boolean          @default(false)
+  remarks       String?
+
+  @@index([windowId])
+}

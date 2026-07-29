@@ -1,0 +1,18 @@
+{
+  "name": "@pilot-tide-planner/excel-parser",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@pilot-tide-planner/shared-types": "*",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
