@@ -6,7 +6,7 @@ export interface ParseResult<T> {
   errors: { row: number; message: string }[];
 }
 
-export function parseTideIndicators(file: Buffer): ParseResult<TideIndicator> {
+export function parseTideIndicators(file: Uint8Array): ParseResult<TideIndicator> {
   const workbook = XLSX.read(file, { type: 'buffer' });
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
@@ -48,7 +48,7 @@ export function parseTideIndicators(file: Buffer): ParseResult<TideIndicator> {
   return result;
 }
 
-export function parseHourlyLevels(file: Buffer): ParseResult<HourlyTideLevel> {
+export function parseHourlyLevels(file: Uint8Array): ParseResult<HourlyTideLevel> {
   const workbook = XLSX.read(file, { type: 'buffer' });
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
