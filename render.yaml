@@ -18,16 +18,6 @@ services:
       - key: CORS_ORIGIN
         value: "https://tidenav-web.onrender.com"
 
-  - type: static
-    name: tidenav-web
-    runtime: static
-    region: singapore
-    buildCommand: npm install && npm run build -w packages/shared-types && npm run build -w apps/web
-    staticPublishPath: apps/web/dist
-    envVars:
-      - key: VITE_API_URL
-        value: "https://tidenav-api.onrender.com/api"
-
 databases:
   - name: tidenav-db
     databaseName: tidenav
