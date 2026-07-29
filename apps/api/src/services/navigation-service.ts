@@ -4,6 +4,12 @@ import { ruleProfileRepository } from '../repositories/rule-profile-repository';
 import { navigationRepository } from '../repositories/navigation-repository';
 import { generateNavigationWindow } from '@pilot-tide-planner/navigation-engine';
 
+function formatTime(dt: Date): string {
+  const h = dt.getUTCHours().toString().padStart(2, '0');
+  const m = dt.getMinutes().toString().padStart(2, '0');
+  return `${h}:${m}`;
+}
+
 export const navigationService = {
   async generate(date: string, profileId?: string) {
     const indicators = await tideIndicatorRepository.findByDate(date);
@@ -42,8 +48,8 @@ export const navigationService = {
         redDifference: Number(profile.redDifference),
         yellowDifference: Number(profile.yellowDifference),
         greenDifference: Number(profile.greenDifference),
-        yellowDisabledStart: '07:00',
-        yellowDisabledEnd: '19:00',
+        yellowDisabledStart: profile.yellowDisabledStart ? formatTime(profile.yellowDisabledStart as unknown as Date) : '07:00',
+        yellowDisabledEnd: profile.yellowDisabledEnd ? formatTime(profile.yellowDisabledEnd as unknown as Date) : '19:00',
       },
     };
 

@@ -9,7 +9,8 @@ import { dashboardRoutes } from './routes/dashboard';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+const corsOrigin = process.env.CORS_ORIGIN || '*';
+app.use(cors({ origin: corsOrigin }));
 app.use(express.json());
 
 app.use('/api/tide-indicators', tideIndicatorRoutes);
