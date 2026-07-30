@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tideApi } from '../api/tideApi';
 import { createLocalDate, todayLocal } from '../utils/format';
@@ -37,32 +37,6 @@ export default function TideIndicatorPage() {
     mutationFn: (id: string) => tideApi.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tide-indicators', date] }),
   });
-
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [uploadMsg, setUploadMsg] = useState<string | null>(null);
-
-  const uploadMutation = useMutation({
-    mutationFn: (file: File) => tideApi.upload(file),
-    onSuccess: (res: any) => {
-      queryClient.invalidateQueries({ queryKey: ['tide-indicators', date] });
-      const msg = res?.inserted
-        ? `Uploaded ${res.inserted} indicator(s) successfully`
-        : 'Upload successful';
-      const errs = res?.errors?.length ? ` (${res.errors.length} rows skipped)` : '';
-      setUploadMsg(msg + errs);
-      setTimeout(() => setUploadMsg(null), 5000);
-    },
-    onError: (err: Error) => {
-      setUploadMsg(`Upload failed: ${err.message}`);
-      setTimeout(() => setUploadMsg(null), 8000);
-    },
-  });
-
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) uploadMutation.mutate(file);
-    e.target.value = '';
-  };
 
   const existingBySlot = useMemo(() => {
     const arr: ({ time: string; level: string; id: string } | null)[] = SLOTS.map(() => null);
@@ -136,14 +110,6 @@ export default function TideIndicatorPage() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
           <span className="text-sm text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg font-mono text-center sm:text-left">{date}</span>
           <button
-            onClick={() => fileRef.current?.click()}
-            disabled={uploadMutation.isPending}
-            className="border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
-          >
-            {uploadMutation.isPending ? 'Uploading...' : 'Upload Excel'}
-          </button>
-          <input ref={fileRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleUpload} />
-          <button
             onClick={saveAll}
             disabled={isSaving}
             className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm"
@@ -152,12 +118,6 @@ export default function TideIndicatorPage() {
           </button>
         </div>
       </div>
-
-      {uploadMsg && (
-        <div className={`p-3 rounded-lg mb-4 text-sm font-medium ${uploadMsg.startsWith('Upload failed') ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
-          {uploadMsg}
-        </div>
-      )}
 
       <div className="sm:hidden space-y-3">
         {SLOTS.map((slot, i) => {

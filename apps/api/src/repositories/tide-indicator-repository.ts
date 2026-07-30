@@ -10,6 +10,15 @@ export const tideIndicatorRepository = {
     });
   },
 
+  async findByRange(from: string, to: string) {
+    const start = new Date(`${from}T00:00:00Z`);
+    const end = new Date(`${to}T23:59:59Z`);
+    return prisma.tideIndicator.findMany({
+      where: { occurredAt: { gte: start, lte: end } },
+      orderBy: { occurredAt: 'asc' },
+    });
+  },
+
   async findAll() {
     return prisma.tideIndicator.findMany({ orderBy: { occurredAt: 'asc' } });
   },

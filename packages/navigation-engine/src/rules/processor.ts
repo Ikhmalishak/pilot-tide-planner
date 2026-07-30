@@ -67,6 +67,8 @@ export class NavigationProcessor {
 
       const currentHigh = highIdx > 0 ? this.highIndicators[highIdx - 1] : this.firstHigh;
       const currentLow = lowIdx > 0 ? this.lowIndicators[lowIdx - 1] : undefined;
+      const nextHigh = highIdx < this.highIndicators.length ? this.highIndicators[highIdx] : undefined;
+      const nextLow = lowIdx < this.lowIndicators.length ? this.lowIndicators[lowIdx] : undefined;
 
       const item = new NavigationItemDomain(level.recordedAt, level.waterLevelFt);
 
@@ -78,6 +80,16 @@ export class NavigationProcessor {
         const yellowThreshold = currentHigh.waterLevelFt - this.profile.yellowDifference;
         if (level.waterLevelFt >= yellowThreshold && !this.profile.isYellowDisabled(item.hourString)) {
           item.isYellow = true;
+        }
+        if (nextLow) {
+          const redThresholdLow = nextLow.waterLevelFt + this.profile.redDifference;
+          if (level.waterLevelFt >= redThresholdLow) {
+            item.isRed = true;
+          }
+          const yellowThresholdLow = nextLow.waterLevelFt + this.profile.yellowDifference;
+          if (level.waterLevelFt >= yellowThresholdLow && !this.profile.isYellowDisabled(item.hourString)) {
+            item.isYellow = true;
+          }
         }
       }
 
@@ -106,6 +118,16 @@ export class NavigationProcessor {
         } else if (greenActive && level.waterLevelFt < greenPeak) {
           greenActive = false;
           greenPeak = -Infinity;
+        }
+        if (nextHigh) {
+          const redThresholdHigh = nextHigh.waterLevelFt - this.profile.redDifference;
+          if (level.waterLevelFt >= redThresholdHigh) {
+            item.isRed = true;
+          }
+          const yellowThresholdHigh = nextHigh.waterLevelFt - this.profile.yellowDifference;
+          if (level.waterLevelFt >= yellowThresholdHigh && !this.profile.isYellowDisabled(item.hourString)) {
+            item.isYellow = true;
+          }
         }
       }
 

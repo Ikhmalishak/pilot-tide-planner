@@ -12,11 +12,20 @@ function formatTime(dt: Date): string {
 
 export const navigationService = {
   async generate(date: string, profileId?: string) {
-    const indicators = await tideIndicatorRepository.findByDate(date);
+    const dt = new Date(`${date}T12:00:00Z`);
+    const prev = new Date(dt);
+    prev.setDate(prev.getDate() - 1);
+    const next = new Date(dt);
+    next.setDate(next.getDate() + 1);
+
+    const rangeFrom = `${prev.getUTCFullYear()}-${String(prev.getUTCMonth() + 1).padStart(2, '0')}-${String(prev.getUTCDate()).padStart(2, '0')}`;
+    const rangeTo = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, '0')}-${String(next.getUTCDate()).padStart(2, '0')}`;
+
+    const indicators = await tideIndicatorRepository.findByRange(rangeFrom, rangeTo);
     const levels = await hourlyLevelRepository.findByDate(date);
 
     if (indicators.length === 0) {
-      throw { status: 400, code: 'MISSING_DATA', message: 'No tide indicators for this date' };
+      throw { status: 400, code: 'MISSING_DATA', message: 'No tide indicators found in surrounding range' };
     }
     if (levels.length === 0) {
       throw { status: 400, code: 'MISSING_DATA', message: 'No hourly tide levels for this date' };

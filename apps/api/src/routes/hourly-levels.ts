@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
+import * as XLSX from 'xlsx';
 import { hourlyLevelRepository } from '../repositories/hourly-level-repository';
 import { validateHourlyTideLevel } from '@pilot-tide-planner/validation';
 import { parseHourlyLevels } from '@pilot-tide-planner/excel-parser';
@@ -43,6 +44,30 @@ router.delete('/:id', async (req: Request, res: Response) => {
   try {
     await hourlyLevelRepository.delete(req.params.id);
     res.json({ success: true, data: null });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message, code: 'SERVER_ERROR' });
+  }
+});
+
+router.get('/export', async (req: Request, res: Response) => {
+  try {
+    const date = req.query.date as string | undefined;
+    const data = date ? await hourlyLevelRepository.findByDate(date) : [];
+
+    const rows = data.map((r) => ({
+      Date: r.recordedAt.toISOString().split('T')[0],
+      Time: `${String(r.recordedAt.getUTCHours()).padStart(2, '0')}:00`,
+      'Level (ft)': Number(r.waterLevelFt),
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, 'Hourly Levels');
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=hourly-levels${date ? '-' + date : ''}.xlsx`);
+    res.send(buf);
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message, code: 'SERVER_ERROR' });
   }

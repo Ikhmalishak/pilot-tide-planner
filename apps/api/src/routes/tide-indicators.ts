@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
+import * as XLSX from 'xlsx';
 import { tideIndicatorRepository } from '../repositories/tide-indicator-repository';
 import { validateTideIndicator } from '@pilot-tide-planner/validation';
 import { parseTideIndicators } from '@pilot-tide-planner/excel-parser';
@@ -9,8 +10,17 @@ const router = Router();
 
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const date = req.query.date as string;
-    const data = date ? await tideIndicatorRepository.findByDate(date) : await tideIndicatorRepository.findAll();
+    const date = req.query.date as string | undefined;
+    const from = req.query.from as string | undefined;
+    const to = req.query.to as string | undefined;
+    let data;
+    if (from && to) {
+      data = await tideIndicatorRepository.findByRange(from, to);
+    } else if (date) {
+      data = await tideIndicatorRepository.findByDate(date);
+    } else {
+      data = await tideIndicatorRepository.findAll();
+    }
     res.json({ success: true, data });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message, code: 'SERVER_ERROR' });
@@ -43,6 +53,31 @@ router.delete('/:id', async (req: Request, res: Response) => {
   try {
     await tideIndicatorRepository.delete(req.params.id);
     res.json({ success: true, data: null });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message, code: 'SERVER_ERROR' });
+  }
+});
+
+router.get('/export', async (req: Request, res: Response) => {
+  try {
+    const date = req.query.date as string | undefined;
+    const data = date ? await tideIndicatorRepository.findByDate(date) : await tideIndicatorRepository.findAll();
+
+    const rows = data.map((r) => ({
+      Date: r.occurredAt.toISOString().split('T')[0],
+      Time: `${String(r.occurredAt.getUTCHours()).padStart(2, '0')}:${String(r.occurredAt.getUTCMinutes()).padStart(2, '0')}`,
+      Type: r.type,
+      'Level (ft)': Number(r.waterLevelFt),
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, 'Tide Indicators');
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=tide-indicators${date ? '-' + date : ''}.xlsx`);
+    res.send(buf);
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message, code: 'SERVER_ERROR' });
   }

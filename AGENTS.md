@@ -50,15 +50,47 @@ START → WAIT_HIGH_TIDE → HIGH DETECTED → HIGH_TIDE_DESCENDING → WAIT_LOW
 
 ## API Endpoints
 - `GET/POST/PUT/DELETE /api/tide-indicators` - CRUD tide indicators
-- `POST /api/tide-indicators/import` - Import via Excel
+- `POST /api/tide-indicators/import` - Import via Excel (standard flat format)
 - `GET/POST/PUT/DELETE /api/hourly-levels` - CRUD hourly levels
-- `POST /api/hourly-levels/import` - Import via Excel
+- `POST /api/hourly-levels/import` - Import via Excel (standard flat format)
 - `GET/PUT /api/rule-profiles` - Manage rule profiles
 - `POST /api/navigation/generate` - Generate navigation window
 - `GET /api/navigation/today` - Get today's window
 - `GET /api/navigation/date/:date` - Get by date
 - `GET /api/navigation/history` - History with pagination
 - `GET /api/dashboard?date=` - Aggregated dashboard data
+- `POST /api/bulk/import` - **15-day bulk import** (accepts both Excel files, parses custom formats, saves to DB, generates navigation windows for all 15 days)
+
+## Bulk Import Endpoint (`POST /api/bulk/import`)
+
+**Purpose**: Pilots receive two Excel files every 15 days. This endpoint processes both at once.
+
+**Request**: `multipart/form-data`
+| Field | Type | Description |
+|-------|------|-------------|
+| `tideIndicators` | file | Monthly tide indicator file (`ttables*-*_mthly.xls`) |
+| `hourlyLevels` | file | Hourly matrix file (`ttables*-*_hourly.xlsx`) |
+| `year` | number (opt) | Defaults to current year |
+| `month` | number (opt) | Defaults to current month |
+| `profileId` | string (opt) | Rule profile ID; defaults to active profile |
+
+**Response**: `{ success, data: { totalDays, succeeded[], failed[], totalInserted, parseErrors[] } }`
+
+## Excel Parsers (`@pilot-tide-planner/excel-parser`)
+
+### `parseMonthlyTideIndicators(file, opts)` → `ParseResult<TideIndicator>`
+Handles `ttables1-15_7_mthly.xls` format (DATE | TIME | MTR | FT.)
+- Tide type alternates **continuously** across day boundaries: first entry in file = HIGH, then alternates HIGH→LOW throughout
+- Day number column may contain newline artifacts (`"7\n0"`, `"10\nO"`) — extracts leading digits only
+- Uses `opts.year` / `opts.month` to construct full Date objects
+
+### `parseHourlyMatrixLevels(file, opts)` → `ParseResult<HourlyTideLevel>`
+Handles `ttables1-15_7_hourly.xlsx` matrix format
+- 2 rows per day: MTR. (meters, skipped) + FT. (feet, extracted)
+- 24 columns: 0000 through 2300
+- Day number from the MTR row's column 0
+
+### `parseTideIndicators(file)` / `parseHourlyLevels(file)` — original parsers for flat columnar format (Date, Time, Type, Level / Time, Level)
 
 ## Frontend Pages
 - `/dashboard` - Main operational dashboard (DateSelector, TideIndicatorPanel, NavigationWindowTable, GenerateButton)

@@ -5,6 +5,7 @@ import TideIndicatorPage from './pages/TideIndicatorPage';
 import HourlyLevelPage from './pages/HourlyLevelPage';
 import NavigationWindowPage from './pages/NavigationWindowPage';
 import RuleProfilePage from './pages/RuleProfilePage';
+import BulkImportPage from './pages/BulkImportPage';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/hourly-levels" element={<HourlyLevelPage />} />
         <Route path="/navigation-windows" element={<NavigationWindowPage />} />
         <Route path="/rule-profiles" element={<RuleProfilePage />} />
+        <Route path="/bulk-import" element={<BulkImportPage />} />
       </Route>
     </Routes>
   );
