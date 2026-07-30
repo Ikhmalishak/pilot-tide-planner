@@ -40,7 +40,23 @@ export class NavigationProcessor {
     let greenActive = false;
     let greenPeak = -Infinity;
 
-    return sortedLevels.map((level) => {
+    const items: NavigationItemDomain[] = [];
+    let nextHighForNearest: TideIndicatorDomain | undefined;
+    let nearestRedIdx = -1;
+    let nearestRedVal = -Infinity;
+    let nearestYellowIdx = -1;
+    let nearestYellowVal = -Infinity;
+    let reachedRed = false;
+    let reachedYellow = false;
+    let reachedLowRed = false;
+    let reachedLowGreen = false;
+    let nearestLowRedIdx = -1;
+    let nearestLowRedVal = -Infinity;
+    let nearestLowGreenIdx = -1;
+    let nearestLowGreenVal = -Infinity;
+
+    for (let i = 0; i < sortedLevels.length; i++) {
+      const level = sortedLevels[i];
       const levelTime = level.recordedAt.getTime();
 
       while (
@@ -48,7 +64,7 @@ export class NavigationProcessor {
         levelTime >= this.highIndicators[highIdx].occurredAt.getTime()
       ) {
         highIdx++;
-        if (state === EngineState.LOW_TIDE_RISING || state === EngineState.WAIT_HIGH_TIDE) {
+        if (state === (EngineState.LOW_TIDE_RISING as EngineState) || state === EngineState.WAIT_HIGH_TIDE) {
           state = EngineState.HIGH_TIDE_DESCENDING;
         }
       }
@@ -62,13 +78,25 @@ export class NavigationProcessor {
           state = EngineState.LOW_TIDE_RISING;
           greenActive = false;
           greenPeak = -Infinity;
+          nextHighForNearest = undefined;
+          reachedRed = false;
+          reachedYellow = false;
+          nearestRedIdx = -1;
+          nearestRedVal = -Infinity;
+          nearestYellowIdx = -1;
+          nearestYellowVal = -Infinity;
+          reachedLowRed = false;
+          reachedLowGreen = false;
+          nearestLowRedIdx = -1;
+          nearestLowRedVal = -Infinity;
+          nearestLowGreenIdx = -1;
+          nearestLowGreenVal = -Infinity;
         }
       }
 
       const currentHigh = highIdx > 0 ? this.highIndicators[highIdx - 1] : this.firstHigh;
       const currentLow = lowIdx > 0 ? this.lowIndicators[lowIdx - 1] : undefined;
       const nextHigh = highIdx < this.highIndicators.length ? this.highIndicators[highIdx] : undefined;
-      const nextLow = lowIdx < this.lowIndicators.length ? this.lowIndicators[lowIdx] : undefined;
 
       const item = new NavigationItemDomain(level.recordedAt, level.waterLevelFt);
 
@@ -81,22 +109,16 @@ export class NavigationProcessor {
         if (level.waterLevelFt >= yellowThreshold && !this.profile.isYellowDisabled(item.hourString)) {
           item.isYellow = true;
         }
-        if (nextLow) {
-          const redThresholdLow = nextLow.waterLevelFt + this.profile.redDifference;
-          if (level.waterLevelFt >= redThresholdLow) {
-            item.isRed = true;
-          }
-          const yellowThresholdLow = nextLow.waterLevelFt + this.profile.yellowDifference;
-          if (level.waterLevelFt >= yellowThresholdLow && !this.profile.isYellowDisabled(item.hourString)) {
-            item.isYellow = true;
-          }
-        }
       }
 
       if ((state === EngineState.LOW_TIDE_RISING || greenActive) && currentLow) {
         const redThreshold = currentLow.waterLevelFt + this.profile.redDifference;
         if (level.waterLevelFt >= redThreshold) {
           item.isRed = true;
+          reachedLowRed = true;
+        } else if (level.waterLevelFt > nearestLowRedVal) {
+          nearestLowRedVal = level.waterLevelFt;
+          nearestLowRedIdx = i;
         }
         const yellowThreshold = currentLow.waterLevelFt + this.profile.yellowDifference;
         if (level.waterLevelFt >= yellowThreshold && !this.profile.isYellowDisabled(item.hourString)) {
@@ -115,18 +137,42 @@ export class NavigationProcessor {
             greenActive = false;
             greenPeak = -Infinity;
           }
+          reachedLowGreen = true;
         } else if (greenActive && level.waterLevelFt < greenPeak) {
           greenActive = false;
           greenPeak = -Infinity;
+        } else if (level.waterLevelFt > nearestLowGreenVal) {
+          nearestLowGreenVal = level.waterLevelFt;
+          nearestLowGreenIdx = i;
         }
+
         if (nextHigh) {
+          if (nextHigh !== nextHighForNearest) {
+            nextHighForNearest = nextHigh;
+            reachedRed = false;
+            reachedYellow = false;
+            nearestRedIdx = -1;
+            nearestRedVal = -Infinity;
+            nearestYellowIdx = -1;
+            nearestYellowVal = -Infinity;
+          }
           const redThresholdHigh = nextHigh.waterLevelFt - this.profile.redDifference;
+          const yellowThresholdHigh = nextHigh.waterLevelFt - this.profile.yellowDifference;
+
           if (level.waterLevelFt >= redThresholdHigh) {
             item.isRed = true;
+            reachedRed = true;
+          } else if (level.waterLevelFt > nearestRedVal) {
+            nearestRedVal = level.waterLevelFt;
+            nearestRedIdx = i;
           }
-          const yellowThresholdHigh = nextHigh.waterLevelFt - this.profile.yellowDifference;
+
           if (level.waterLevelFt >= yellowThresholdHigh && !this.profile.isYellowDisabled(item.hourString)) {
             item.isYellow = true;
+            reachedYellow = true;
+          } else if (level.waterLevelFt > nearestYellowVal) {
+            nearestYellowVal = level.waterLevelFt;
+            nearestYellowIdx = i;
           }
         }
       }
@@ -145,7 +191,24 @@ export class NavigationProcessor {
         }
       }
 
-      return item;
-    });
+      items.push(item);
+    }
+
+    if (!reachedLowRed && nearestLowRedIdx >= 0) {
+      items[nearestLowRedIdx].isRed = true;
+    }
+    if (!reachedLowGreen && nearestLowGreenIdx >= 0) {
+      items[nearestLowGreenIdx].isGreen = true;
+    }
+    if (nextHighForNearest) {
+      if (!reachedRed && nearestRedIdx >= 0) {
+        items[nearestRedIdx].isRed = true;
+      }
+      if (!reachedYellow && nearestYellowIdx >= 0) {
+        items[nearestYellowIdx].isYellow = true;
+      }
+    }
+
+    return items;
   }
 }

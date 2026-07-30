@@ -5,7 +5,7 @@ import { hourlyLevelRoutes } from './routes/hourly-levels';
 import { ruleProfileRoutes } from './routes/rule-profiles';
 import { navigationRoutes } from './routes/navigation';
 import { dashboardRoutes } from './routes/dashboard';
-import { bulkRoutes } from './routes/bulk';
+
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -19,7 +19,6 @@ app.use('/api/hourly-levels', hourlyLevelRoutes);
 app.use('/api/rule-profiles', ruleProfileRoutes);
 app.use('/api/navigation', navigationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/bulk', bulkRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({ success: true, message: 'Pilot Tide Planner API is running' });

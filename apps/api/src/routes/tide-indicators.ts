@@ -3,7 +3,9 @@ import multer from 'multer';
 import * as XLSX from 'xlsx';
 import { tideIndicatorRepository } from '../repositories/tide-indicator-repository';
 import { validateTideIndicator } from '@pilot-tide-planner/validation';
-import { parseTideIndicators } from '@pilot-tide-planner/excel-parser';
+import { parseTideIndicators, parseMonthlyTideIndicators } from '@pilot-tide-planner/excel-parser';
+import { navigationService } from '../services/navigation-service';
+import { hourlyLevelRepository } from '../repositories/hourly-level-repository';
 
 const upload = multer({ storage: multer.memoryStorage() });
 const router = Router();
@@ -88,10 +90,21 @@ router.post('/import', upload.single('file'), async (req: Request, res: Response
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded', code: 'MISSING_FILE' });
     }
-    const parsed = parseTideIndicators(req.file.buffer);
+    const year = req.body.year ? parseInt(req.body.year as string, 10) : undefined;
+    const month = req.body.month ? parseInt(req.body.month as string, 10) : undefined;
+    const profileId = req.body.profileId as string | undefined;
+
+    let parsed;
+    if (year !== undefined && month !== undefined) {
+      parsed = parseMonthlyTideIndicators(req.file.buffer, { year, month });
+    } else {
+      parsed = parseTideIndicators(req.file.buffer);
+    }
+
     if (parsed.errors.length > 0 && parsed.data.length === 0) {
       return res.status(422).json({ success: false, message: 'Failed to parse file', code: 'PARSE_ERROR', errors: parsed.errors });
     }
+    const genResults: { date: string; success: boolean; error?: string }[] = [];
     if (parsed.data.length > 0) {
       const dates = [...new Set(parsed.data.map((d) => {
         const dt = new Date(d.occurredAt);
@@ -101,8 +114,19 @@ router.post('/import', upload.single('file'), async (req: Request, res: Response
         await tideIndicatorRepository.deleteByDate(date);
       }
       await tideIndicatorRepository.createMany(parsed.data as any);
+      for (const date of dates) {
+        const levels = await hourlyLevelRepository.findByDate(date);
+        if (levels.length > 0) {
+          try {
+            await navigationService.generate(date, profileId);
+            genResults.push({ date, success: true });
+          } catch (err: any) {
+            genResults.push({ date, success: false, error: err.message });
+          }
+        }
+      }
     }
-    res.json({ success: true, inserted: parsed.data.length, failed: parsed.errors.length, errors: parsed.errors });
+    res.json({ success: true, inserted: parsed.data.length, failed: parsed.errors.length, errors: parsed.errors, navigationGenerated: genResults });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message, code: 'SERVER_ERROR' });
   }

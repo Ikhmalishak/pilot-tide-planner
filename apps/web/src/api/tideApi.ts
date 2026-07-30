@@ -22,17 +22,27 @@ export const hourlyApi = {
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
-export const bulkApi = {
-  upload: async (tideFile: File, hourlyFile: File, year?: number, month?: number, profileId?: string) => {
+export const uploadApi = {
+  tideIndicators: async (file: File, year?: number, month?: number, profileId?: string) => {
     const form = new FormData();
-    form.append('tideIndicators', tideFile);
-    form.append('hourlyLevels', hourlyFile);
+    form.append('file', file);
     if (year) form.append('year', String(year));
     if (month) form.append('month', String(month));
     if (profileId) form.append('profileId', profileId);
-    const res = await fetch(`${BASE_URL}/bulk/import`, { method: 'POST', body: form });
+    const res = await fetch(`${BASE_URL}/tide-indicators/import`, { method: 'POST', body: form });
     const json = await res.json();
     if (!json.success) throw new Error(json.message || 'Import failed');
-    return json.data;
+    return json;
+  },
+  hourlyLevels: async (file: File, year?: number, month?: number, profileId?: string) => {
+    const form = new FormData();
+    form.append('file', file);
+    if (year) form.append('year', String(year));
+    if (month) form.append('month', String(month));
+    if (profileId) form.append('profileId', profileId);
+    const res = await fetch(`${BASE_URL}/hourly-levels/import`, { method: 'POST', body: form });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message || 'Import failed');
+    return json;
   },
 };
